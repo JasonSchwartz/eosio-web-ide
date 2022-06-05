@@ -15,7 +15,7 @@ ACTION tictactoe::create(name challenger, name host){
     // check that the host and challenger are not the same
     check(challenger != host, "Host and challenger must be different");
 
-    game_t games{get_self(), host.value};
+    game_t games{get_self(), get_self().value};
     
     //find the hosts games
     auto host_games = games.find(host.value);
@@ -23,15 +23,15 @@ ACTION tictactoe::create(name challenger, name host){
     //find the hosts games
     auto challenger_games = games.find(challenger.value);
 
-    check(host_games != std::end(games), "Host is playing another game...");
-    check(challenger_games != std::end(games), "challenger is playing another game...");
+    check(host_games == std::end(games), "Host is playing another game...");
+    check(challenger_games == std::end(games), "challenger is playing another game...");
 
     // Because we don't have a secondary index we need to iterate through the table and check each value
-
     auto it = games.begin();
     while (it != games.end()) {
         check(it->challenger != host, "Found host as challenger in other game");
         check(it->challenger != challenger, "Found challenger as challenger in other game");
+        it++;
     }
     // Passed our checks
 
@@ -42,15 +42,46 @@ ACTION tictactoe::create(name challenger, name host){
 }
 
 ACTION tictactoe::close (name challenger, name host){
-    require_auth(host);
+    check(has_auth(host) || has_auth(challenger), "Only host or challanger can delete game");
 
     //check that the host and challenger are not the same
     check(challenger != host, "Host and challenger must be different");
 
-    game_t games{get_self(), host.value};
+    game_t games{get_self(), get_self().value};
     
-    //find the hosts games
-    auto host_games = games.require_find(host.value, "Not a host in the games table, only host can delete game");
+    //Both host and challanger can delete a game
+    auto host_games = games.find(host.value);
+    auto challenger_games = games.find(challenger.value);
 
-    games.erase(host_games);
+    //If the host is found iterate through records to find challanger
+    if (host_games != std::end(games)){
+        while (host_games != games.end()) {
+            if (challenger == host_games->challenger){
+                 games.erase(host_games);
+                 break;
+            }
+            host_games++;
+        }
+    } else if (challenger_games != std::end(games){
+        while (challenger_games != games.end()) {
+            if (host == challenger_games->host){
+                 games.erase(challenger_games);
+                 break;
+            }
+            it++;
+        }
+
+    }
+
+
+
+
+    
+
+
+    check(host_games == std::end(games) , "Host is playing another game...");
+    check(challenger_games == std::end(games), "challenger is playing another game...");
+
+
+   
 }
