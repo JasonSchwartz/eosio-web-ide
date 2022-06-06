@@ -4,6 +4,37 @@
 
 using namespace eosio;
 
+
+bool tictactoe::find_matches(name user_a, name user_b, bool flag_del){
+
+    bool found_match = false;
+
+    // instance of games table
+    game_t games{get_self(), get_self().value};
+
+    auto it = games.begin();
+    while (it != games.end()) {
+        if (user_a == it->host && user_b == it->challenger){
+            found_match = true;
+            if (flag_del){
+                games.erase(it);
+                return found_match;
+            }
+            break;
+        } else if (user_a == it->challenger && user_b == it->host) {
+            found_match = true;
+            if (flag_del){
+                games.erase(it);
+                return found_match;
+            }
+            break;
+        }
+        it++;
+    }
+    return found_match;
+}
+
+
 ACTION tictactoe::welcome(name host, name user){
     require_auth(get_self());
     print("Welcome, challengers ", name(host), " and ", name(user), "!");
@@ -15,27 +46,14 @@ ACTION tictactoe::create(name challenger, name host){
     // check that the host and challenger are not the same
     check(challenger != host, "Host and challenger must be different");
 
+    bool found_match_host = find_matches(host, challenger, false);
+
+    check(!(found_match_host), "host and challanger already in match");
+
     game_t games{get_self(), get_self().value};
-    
-    //find the hosts games
-    auto host_games = games.find(host.value);
-
-    //find the hosts games
-    auto challenger_games = games.find(challenger.value);
-
-    check(host_games == std::end(games), "Host is playing another game...");
-    check(challenger_games == std::end(games), "challenger is playing another game...");
-
-    // Because we don't have a secondary index we need to iterate through the table and check each value
-    auto it = games.begin();
-    while (it != games.end()) {
-        check(it->challenger != host, "Found host as challenger in other game");
-        check(it->challenger != challenger, "Found challenger as challenger in other game");
-        it++;
-    }
     // Passed our checks
-
     games.emplace(get_self(), [&](auto& element) {
+        element.row_id = games.available_primary_key();
         element.host = host; 
         element.challenger = challenger;
     });
@@ -47,41 +65,18 @@ ACTION tictactoe::close (name challenger, name host){
     //check that the host and challenger are not the same
     check(challenger != host, "Host and challenger must be different");
 
-    game_t games{get_self(), get_self().value};
-    
-    //Both host and challanger can delete a game
-    auto host_games = games.find(host.value);
-    auto challenger_games = games.find(challenger.value);
+    bool found_match = find_matches(host, challenger, true);
 
-    //If the host is found iterate through records to find challanger
-    if (host_games != std::end(games)){
-        while (host_games != games.end()) {
-            if (challenger == host_games->challenger){
-                 games.erase(host_games);
-                 break;
-            }
-            host_games++;
-        }
-    } else if (challenger_games != std::end(games){
-        while (challenger_games != games.end()) {
-            if (host == challenger_games->host){
-                 games.erase(challenger_games);
-                 break;
-            }
-            it++;
-        }
+    check(found_match, "Host and Challanger don't have game to remove...");
 
-    }
-
-
-
-
-    
-
-
-    check(host_games == std::end(games) , "Host is playing another game...");
-    check(challenger_games == std::end(games), "challenger is playing another game...");
-
-
-   
 }
+
+//for easy debugging
+// ACTION tictactoe::delall(){
+//     game_t games{get_self(), get_self().value};
+
+//     auto it = games.begin();
+//     while (it != games.end()) {
+//         it = games.erase(it);
+//     }
+// }
