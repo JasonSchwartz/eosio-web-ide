@@ -148,6 +148,7 @@ ACTION tictactoe::move(name challenger, name host, name by, uint16_t row, uint16
     check(itr_game != std::end(games), "No match between host and challenger to reset");
 
     check(itr_game->winner == name("none"), "Game has already been won");
+    check(itr_game->turn == by, "It's not your turn");
 
     auto board = itr_game->board;
 
@@ -193,9 +194,6 @@ ACTION tictactoe::move(name challenger, name host, name by, uint16_t row, uint16
             element.board = board; 
         });
     }
-
-
-
 }
 
 ACTION tictactoe::restart(name challenger, name host, name by){
@@ -212,11 +210,11 @@ ACTION tictactoe::restart(name challenger, name host, name by){
     // Passed our checks
     games.modify(itr_game, get_self(), [&](auto& element) {
         element.turn = host; // host has the first turn
+        element.winner = "none"_n; // host has the first turn
         element.board = initBoard();  // re-initialize the board
     });
 
 }
-
 //for easy debugging
 // ACTION tictactoe::delall(){
 //     game_t games{get_self(), get_self().value};
