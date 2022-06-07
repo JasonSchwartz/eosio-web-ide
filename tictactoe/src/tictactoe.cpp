@@ -12,6 +12,43 @@ std::vector<uint8_t> initBoard(){
     return board;
 }
 
+bool is_draw(std::vector<uint8_t> board){
+    return (std::find(board.begin(), board.end(), 0) == board.end());
+
+}
+
+bool is_empty_cell(std::vector<uint8_t> board, uint16_t position){
+    return board[position] == 0;
+}
+
+bool is_winning_move(std::vector<uint8_t> board, uint8_t symbol){
+    // check rows first
+    for (int rows = 0; rows<3; rows++){
+        uint16_t counter = 0;
+        for (int columns = 0; columns<3; columns++){
+            uint16_t position = columns + 3*rows;
+            if (board[position] == symbol) counter ++;
+        }
+        if (counter == 3) return true;
+    }
+    // check columns
+    for (int columns = 0; columns<3; columns++){
+        uint16_t counter = 0;
+        for (int rows = 0; rows<3; rows++){
+            uint16_t position = columns + 3*rows;
+            if (board[position] == symbol) counter ++;
+        }
+        if (counter == 3) return true;
+    }
+    // get diagnals manually
+    if (board[4] == symbol){
+        if (board[0] == symbol &&  board[8] == symbol) return true;
+        if (board[6] == symbol &&  board[8] == symbol) return true;
+    }
+    return false;
+}
+
+
 bool tictactoe::find_matches(name user_a, name user_b, bool flag_del){
 
     bool found_match = false;
@@ -83,8 +120,8 @@ ACTION tictactoe::create(name challenger, name host){
         element.challenger = challenger;
         element.host = host; 
         element.turn = host; // host has the first turn
-        //element.winner = "none"_n;
-        //element.board = initBoard();
+        element.winner = "none"_n;
+        element.board = initBoard();
     });
 }
 
@@ -104,20 +141,88 @@ ACTION tictactoe::move(name challenger, name host, name by, uint16_t row, uint16
     require_auth(by);
     check(by == challenger || by == host, "You are not authorized to move in this game");
 
+    game_t games{get_self(), get_self().value};
+
+    // find current game
+    auto itr_game = games.find(host.value + challenger.value);
+    check(itr_game != std::end(games), "No match between host and challenger to reset");
+
+    check(itr_game->winner == name("none"), "Game has already been won");
+
+    auto board = itr_game->board;
+
+    check(column < 3 && row < 3, "proposed position out of bounds");
+
+    uint16_t position = column + 3*row;
+    check(is_empty_cell(board, position), "Position on board already in use");
+
+    // game play
+    uint8_t symbol;
+    name next_turn;
+    if (by == host) {
+        symbol = 1;
+        next_turn = challenger;
+    }
+    if (by == challenger) {
+        symbol = 2;
+        next_turn = host;
+    }
+
+    //place symbol on board
+    board[position] = symbol;
+
+    bool is_won = is_winning_move(board, symbol);
+
+    bool is_draw_game = false;
+    if (!is_won) is_draw_game = is_draw(board); 
+
+    if (!is_won && !is_draw_game){
+        games.modify(itr_game, get_self(), [&](auto& element) {
+            element.turn = next_turn; // host has the first turn
+            element.board = board;  // re-initialize the board
+        });
+    } else if (is_won) {
+        games.modify(itr_game, get_self(), [&](auto& element) {
+            element.turn = next_turn; // host has the first turn
+            element.winner = by;
+            element.board = board; 
+        });
+    } else if (is_draw_game){
+        games.modify(itr_game, get_self(), [&](auto& element) {
+            element.turn = next_turn; // host has the first turn
+            element.board = board; 
+        });
+    }
+
+
+
 }
 
 ACTION tictactoe::restart(name challenger, name host, name by){
     require_auth(by);
     check(by == challenger || by == host, "You are not authorized to restart game");
 
+    //find the game between challanger and host
+    game_t games{get_self(), get_self().value};
+
+    auto itr_game = games.find(host.value + challenger.value);
+
+    check(itr_game != std::end(games), "No match between host and challenger to reset");
+    
+    // Passed our checks
+    games.modify(itr_game, get_self(), [&](auto& element) {
+        element.turn = host; // host has the first turn
+        element.board = initBoard();  // re-initialize the board
+    });
+
 }
 
 //for easy debugging
-ACTION tictactoe::delall(){
-    game_t games{get_self(), get_self().value};
+// ACTION tictactoe::delall(){
+//     game_t games{get_self(), get_self().value};
 
-    auto it = games.begin();
-    while (it != games.end()) {
-        it = games.erase(it);
-    }
-}
+//     auto it = games.begin();
+//     while (it != games.end()) {
+//         it = games.erase(it);
+//     }
+// }
