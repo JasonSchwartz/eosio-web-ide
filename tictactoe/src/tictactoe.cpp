@@ -1,9 +1,8 @@
+#include <tictactoe.hpp>
 #include <eosio/eosio.hpp>
 #include <string>
-#include <include/tictactoe.hpp>
 
 using namespace eosio;
-
 
 bool tictactoe::find_matches(name user_a, name user_b, bool flag_del){
 
@@ -12,32 +11,44 @@ bool tictactoe::find_matches(name user_a, name user_b, bool flag_del){
     // instance of games table
     game_t games{get_self(), get_self().value};
 
-    auto it = games.begin();
-    while (it != games.end()) {
-        if (user_a == it->host && user_b == it->challenger){
+    auto itr = games.find(user_a.value);
+    if (itr != std::end(games)){
+    // can we find the match by host?
+        if (user_b == itr -> challenger){
             found_match = true;
             if (flag_del){
-                games.erase(it);
-                return found_match;
+                games.erase(itr);
             }
-            break;
-        } else if (user_a == it->challenger && user_b == it->host) {
-            found_match = true;
-            if (flag_del){
-                games.erase(it);
-                return found_match;
-            }
-            break;
+            return found_match;
         }
-        it++;
+        // avoid assertion error if host already is hosting a game
+        if (!flag_del){
+            check(0, "Host cant host more than one game at a time");
+        }
     }
+    // if the host wasn't found in any games
+    // iterate through challangers and search for host
+    auto idx = games.get_index<"secid"_n>();
+    for ( auto itr = idx.begin(); itr != idx.end(); itr++ ) {
+        // print each row's values
+        // eosio::print_f("Games Table : {%, %}\n", itr->host, itr->challenger);
+        // print("print in loop");
+        if (user_a == itr->challenger && user_b == itr->host){
+            found_match = true;
+            if (flag_del){
+                auto itr_ = games.find(user_b.value);
+                games.erase(itr_);
+            }
+           return found_match; 
+        }
+    } 
     return found_match;
 }
 
 
-ACTION tictactoe::welcome(name host, name user){
+ACTION tictactoe::welcome(name challenger, name host){
     require_auth(get_self());
-    print("Welcome, challengers ", name(host), " and ", name(user), "!");
+    print("Welcome, challengers ", name(host), " and ", name(challenger), "!");
 }
 
 ACTION tictactoe::create(name challenger, name host){
@@ -53,7 +64,6 @@ ACTION tictactoe::create(name challenger, name host){
     game_t games{get_self(), get_self().value};
     // Passed our checks
     games.emplace(get_self(), [&](auto& element) {
-        element.row_id = games.available_primary_key();
         element.host = host; 
         element.challenger = challenger;
     });

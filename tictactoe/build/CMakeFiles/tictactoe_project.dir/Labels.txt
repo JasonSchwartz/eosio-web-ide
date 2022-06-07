@@ -1,0 +1,14 @@
+# Target labels
+ tictactoe_project
+# Source files and their labels
+/workspace/eosio-web-ide/tictactoe/build/CMakeFiles/tictactoe_project
+/workspace/eosio-web-ide/tictactoe/build/CMakeFiles/tictactoe_project.rule
+/workspace/eosio-web-ide/tictactoe/build/CMakeFiles/tictactoe_project-complete.rule
+/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-install.rule
+/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-mkdir.rule
+/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-download.rule
+/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-update.rule
+/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-patch.rule
+/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-configure.rule
+/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-build.rule
+/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-test.rule

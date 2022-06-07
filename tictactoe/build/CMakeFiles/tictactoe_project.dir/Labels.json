@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/CMakeFiles/tictactoe_project"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/CMakeFiles/tictactoe_project.rule"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/CMakeFiles/tictactoe_project-complete.rule"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-install.rule"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-mkdir.rule"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-download.rule"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-update.rule"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-patch.rule"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-configure.rule"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-build.rule"
+		},
+		{
+			"file" : "/workspace/eosio-web-ide/tictactoe/build/tictactoe_project-prefix/src/tictactoe_project-stamp/tictactoe_project-test.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"tictactoe_project"
+		],
+		"name" : "tictactoe_project"
+	}
+}

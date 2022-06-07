@@ -1,0 +1,3 @@
+/workspace/eosio-web-ide/tictactoe/build/tictactoe/CMakeFiles/rebuild_cache.dir
+/workspace/eosio-web-ide/tictactoe/build/tictactoe/CMakeFiles/tictactoe.dir
+/workspace/eosio-web-ide/tictactoe/build/tictactoe/CMakeFiles/edit_cache.dir

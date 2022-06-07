@@ -1,0 +1,1 @@
+/usr/bin/eosio-ld  CMakeFiles/tictactoe.dir/tictactoe.obj -o tictactoe.wasm 

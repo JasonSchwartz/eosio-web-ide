@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/workspace/eosio-web-ide/tictactoe/src/../include/tictactoe.hpp
+eosio/eosio.hpp
+-
+
+/workspace/eosio-web-ide/tictactoe/src/tictactoe.cpp
+tictactoe.hpp
+-
+eosio/eosio.hpp
+-
+string
+-
+
