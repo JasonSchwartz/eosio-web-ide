@@ -11,24 +11,39 @@ CONTRACT tictactoe : public contract {
 
         ACTION close(name challenger, name host);
 
-        //ACTION delall();
+        ACTION move(name challenger, name host, name by, uint16_t row, uint16_t column);
 
+        ACTION restart(name challenger, name host, name by);
+
+        //ACTION delall();
     
     private:
         // Row ID is a unique ID that will allow us to iterate over all rows
-        // this won't work for large tables, but will work fine here
-        // obviously secondary ids are the way to go
+        // for simplicity our PK will be host.value + challanger.value
+        // This is bad practice because potential for clash
+        // for example 2 + 3 = 5 and 1 + 4 = 5, 
+        // a benefit of this is that a record can always be found
+        // host.value + challanger.value ==  challanger.value + host.value
+        // concatinating names won't work because EOSIO length limits
         TABLE game_s {
-            name host;
+            uint64_t row_id;
             name challenger;
-        uint64_t primary_key() const { return host.value; }
-        uint64_t by_secondary () const { return challenger.value;}
+            name host;
+            name turn;
+            name winner;
+            std::vector<uint8_t> board;
+        uint64_t primary_key() const { return row_id; }
+        uint64_t get_secondary_1 () const { return host.value;}
+        uint64_t get_secondary_2 () const { return challenger.value;}
         };
 
         //using game_t = eosio::multi_index<"game"_n, game_s>;
 
-        typedef eosio::multi_index<"game"_n, game_s, eosio::indexed_by<"secid"_n, eosio::const_mem_fun<game_s, uint64_t, &game_s::by_secondary>>> game_t;
-        game_t inventory{get_self(), get_self().value};
+        typedef eosio::multi_index<"game"_n, game_s
+            ,eosio::indexed_by<"byhost"_n,eosio::const_mem_fun<game_s, uint64_t, &game_s::get_secondary_1>>
+            ,eosio::indexed_by<"bychallenger"_n,eosio::const_mem_fun<game_s, uint64_t, &game_s::get_secondary_2>>> game_t;
+        
+        game_t game{get_self(), get_self().value};
 
         // iterate through user_a games 
         // returns true of user_a has a game against user_b 
