@@ -45,12 +45,6 @@ bool tictactoe::find_matches(name user_a, name user_b, bool flag_del){
     return found_match;
 }
 
-
-ACTION tictactoe::welcome(name challenger, name host){
-    require_auth(get_self());
-    print("Welcome, challengers ", name(host), " and ", name(challenger), "!");
-}
-
 ACTION tictactoe::create(name challenger, name host){
     require_auth(host);
 

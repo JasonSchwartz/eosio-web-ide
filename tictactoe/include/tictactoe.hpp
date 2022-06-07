@@ -7,8 +7,6 @@ CONTRACT tictactoe : public contract {
         using contract::contract;
 
         // define action constructors
-        ACTION welcome(name challenger, name host);
-
         ACTION create(name challenger, name host);
 
         ACTION close(name challenger, name host);
