@@ -1,0 +1,81 @@
+cleos create account eosio tictactoe EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV;
+
+cleos create account eosio bob EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV;
+cleos create account eosio alice EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV;
+cleos create account eosio steve EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV;
+cleos create account eosio ringo EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV;
+cleos create account eosio john EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV;
+cleos create account eosio paul EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV;
+cleos create account eosio george EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV;
+
+eosio-cpp -abigen -o tictactoe.wasm contract/tictactoe.cpp
+
+cleos set contract tictactoe tictactoe tictactoe.wasm tictactoe.abi
+
+
+cleos push action tictactoe create '[bob, alice]' -p bob
+
+cleos get table tictactoe 'tictactoe'  game
+cleos get table tictactoe 'tictactoe'  leaderboard
+
+cleos push action tictactoe close '[bob, alice]' -p bob
+
+cleos push action tictactoe delall -p bob
+
+
+// DELETE ACTION
+cleos push action tictactoe delall '[]' -p alice
+
+
+// all players playing one player
+
+cleos push action tictactoe create '[ringo, george]' -p george;
+cleos push action tictactoe create '[ringo, john]' -p john;
+cleos push action tictactoe create '[ringo, bob]' -p bob;
+cleos push action tictactoe create '[ringo, alice]' -p alice;
+cleos push action tictactoe create '[ringo, paul]' -p paul;
+
+
+cleos push action tictactoe create '[bob, alice]' -p alice;
+
+// tic tac toe game play between bob and alice
+
+cleos push action tictactoe move '[bob, alice, alice, 0, 0]' -p alice;
+cleos push action tictactoe move '[bob, alice, bob, 0, 1]' -p bob;
+cleos push action tictactoe move '[bob, alice, alice, 0, 2]' -p alice;
+cleos push action tictactoe move '[bob, alice, bob, 1, 0]' -p bob;
+cleos push action tictactoe move '[bob, alice, alice, 1, 1]' -p alice;
+cleos push action tictactoe move '[bob, alice, bob, 1, 2]' -p bob;
+cleos push action tictactoe move '[bob, alice, alice, 2, 0]' -p alice;
+cleos push action tictactoe move '[bob, alice, bob, 2, 2]' -p bob;
+cleos push action tictactoe move '[bob, alice, alice, 2, 1]' -p alice;
+
+cleos push action tictactoe restart '[bob, alice, bob]' -p bob;
+
+// diagnol
+
+cleos push action tictactoe move '[bob, alice, alice, 1, 2]' -p alice
+cleos push action tictactoe move '[bob, alice, bob, 0, 2]' -p bob;
+cleos push action tictactoe move '[bob, alice, alice, 1, 1]' -p alice;
+cleos push action tictactoe move '[bob, alice, bob, 0, 1]' -p bob;
+cleos push action tictactoe move '[bob, alice, alice, 2, 2]' -p alice;
+cleos push action tictactoe move '[bob, alice, bob, 0, 0]' -p bob;
+
+
+
+
+cleos push action tictactoe move '[john, alice, john, 1, 0]' -p john;
+cleos push action tictactoe move '[john, alice, alice, 0, 0]' -p alice
+cleos push action tictactoe move '[john, alice, john, 1, 1]' -p john;
+cleos push action tictactoe move '[john, alice, alice, 2, 1]' -p alice;
+cleos push action tictactoe move '[john, alice, john, 2, 2]' -p john;
+cleos push action tictactoe move '[john, alice, alice, 2, 0]' -p alice;
+cleos push action tictactoe move '[john, alice, john, 1, 2]' -p john;
+cleos push action tictactoe move '[john, alice, alice, 0, 1]' -p alice;
+cleos get table tictactoe 'tictactoe'  game;
+
+cleos push action tictactoe restart '[bob, alice, bob]' -p bob
+
+
+
+
