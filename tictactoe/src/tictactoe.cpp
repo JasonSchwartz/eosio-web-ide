@@ -1,10 +1,19 @@
 #include <tictactoe.hpp>
 #include <eosio/eosio.hpp>
+#include <eosio/time.hpp>
+#include <eosio/system.hpp>
 #include <string>
 
 using namespace eosio;
 
 // helper functions
+
+uint64_t epoch_time_seconds() {
+   auto now = eosio::current_time_point();
+   auto epoch_time_seconds = now.sec_since_epoch();
+   return epoch_time_seconds;
+}
+
 
 std::vector<uint8_t> initBoard(){
     std::vector<uint8_t> board;
@@ -103,6 +112,50 @@ bool tictactoe::find_matches(name user_a, name user_b, bool flag_del){
     return found_match;
 }
 
+void tictactoe::end_of_game(name by, name next_turn, bool is_won){
+    leaderboard_t leaderboard{get_self(), get_self().value};
+    auto find_by = leaderboard.find(by.value);
+    auto find_next_turn = leaderboard.find(next_turn.value);
+
+    uint8_t game_won = 0;
+    uint8_t game_tie = 0;
+    if (is_won){
+        game_won = 1;
+    } else {
+        game_tie = 1;
+    }
+    // Update for the current player.
+    // Only two possible outcomes, win or tie
+    if (find_by == std::end(leaderboard)){
+        leaderboard.emplace(get_self(), [&](auto& element) {
+            element.player = by;
+            element.num_wins = game_won;
+            element.num_losses = 0;
+            element.num_ties = game_tie; 
+        });
+    } else {
+        leaderboard.modify(find_by, get_self(), [&](auto& element) {
+            element.num_wins = find_by -> num_wins + game_won;
+            element.num_ties = find_by -> num_ties + game_tie; 
+        });
+    }
+    // Update for the current player.
+    // Only two possible outcomes, loss or tie
+    if (find_next_turn == std::end(leaderboard)){
+        leaderboard.emplace(get_self(), [&](auto& element) {
+            element.player = next_turn;
+            element.num_wins = 0;
+            element.num_losses = game_won;  // A win for current player is a loss
+            element.num_ties = game_tie; 
+        });
+    } else {
+        leaderboard.modify(find_next_turn, get_self(), [&](auto& element) {
+            element.num_losses = find_next_turn -> num_losses + game_won;
+            element.num_ties = find_next_turn -> num_ties + game_tie; 
+        });
+    }
+}
+
 ACTION tictactoe::create(name challenger, name host){
     require_auth(host);
 
@@ -122,6 +175,7 @@ ACTION tictactoe::create(name challenger, name host){
         element.turn = host; // host has the first turn
         element.winner = "none"_n;
         element.board = initBoard();
+        element.time_of_move = epoch_time_seconds();
     });
 }
 
@@ -157,6 +211,9 @@ ACTION tictactoe::move(name challenger, name host, name by, uint16_t row, uint16
     uint16_t position = column + 3*row;
     check(is_empty_cell(board, position), "Position on board already in use");
 
+    //Has it been too long between moves?
+    uint64_t time_delta = epoch_time_seconds()- itr_game -> time_of_move;
+
     // game play
     uint8_t symbol;
     name next_turn;
@@ -169,30 +226,57 @@ ACTION tictactoe::move(name challenger, name host, name by, uint16_t row, uint16
         next_turn = host;
     }
 
+    // You lose if you take more than 60 seconds
+    // to make your move
+    if (time_delta > 60){
+
+        print("You took too long, the winner is {%}", next_turn);
+
+        //write a blank board and declare a winner
+        games.modify(itr_game, get_self(), [&](auto& element) {
+            element.turn = next_turn; // host has the first turn
+            element.winner = next_turn;
+            element.board = initBoard(); 
+            element.time_of_move = epoch_time_seconds();
+        });
+
+        end_of_game(next_turn, by, true);
+        return;
+    }
+
     //place symbol on board
     board[position] = symbol;
 
     bool is_won = is_winning_move(board, symbol);
-
     bool is_draw_game = false;
     if (!is_won) is_draw_game = is_draw(board); 
+
+    // Update leaderboard on game end
+    bool is_game_end = is_won || is_draw_game;
 
     if (!is_won && !is_draw_game){
         games.modify(itr_game, get_self(), [&](auto& element) {
             element.turn = next_turn; // host has the first turn
             element.board = board;  // re-initialize the board
+            element.time_of_move = epoch_time_seconds();
         });
     } else if (is_won) {
         games.modify(itr_game, get_self(), [&](auto& element) {
             element.turn = next_turn; // host has the first turn
             element.winner = by;
             element.board = board; 
+            element.time_of_move = epoch_time_seconds();
         });
     } else if (is_draw_game){
         games.modify(itr_game, get_self(), [&](auto& element) {
             element.turn = next_turn; // host has the first turn
-            element.board = board; 
+            element.board = board;
+            element.time_of_move = epoch_time_seconds();
         });
+    }
+
+    if (is_game_end) {
+        end_of_game(by, next_turn, is_won);
     }
 }
 
@@ -212,8 +296,8 @@ ACTION tictactoe::restart(name challenger, name host, name by){
         element.turn = host; // host has the first turn
         element.winner = "none"_n; // host has the first turn
         element.board = initBoard();  // re-initialize the board
+        element.time_of_move = epoch_time_seconds();
     });
-
 }
 //for easy debugging
 // ACTION tictactoe::delall(){

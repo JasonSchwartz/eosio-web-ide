@@ -32,6 +32,7 @@ CONTRACT tictactoe : public contract {
             name turn;
             name winner;
             std::vector<uint8_t> board;
+            uint64_t time_of_move;
         uint64_t primary_key() const { return row_id; }
         uint64_t get_secondary_1 () const { return host.value;}
         uint64_t get_secondary_2 () const { return challenger.value;}
@@ -45,9 +46,24 @@ CONTRACT tictactoe : public contract {
         
         game_t game{get_self(), get_self().value};
 
+
+        // Leaderboard Table
+        // Scoped to contract account
+        TABLE leaderboard_s {
+            name player;
+            uint32_t num_wins;
+            uint32_t num_losses;
+            uint32_t num_ties;
+            uint64_t primary_key() const { return player.value; }
+        };
+        using leaderboard_t = eosio::multi_index<"leaderboard"_n, leaderboard_s>;
+        leaderboard_t leaderboard{get_self(), get_self().value};
+
+
+
         // iterate through user_a games 
         // returns true of user_a has a game against user_b 
 
         bool find_matches(name user_a, name user_b, bool flag_del);
-
+        void end_of_game(name by, name next_turn, bool is_won);
 };
